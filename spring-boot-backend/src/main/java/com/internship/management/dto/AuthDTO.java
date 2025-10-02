@@ -51,4 +51,47 @@ public class AuthDTO {
         private String token;
         private UserDTO user;
     }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateAdminRequest {
+        private String email;
+        private String password;
+        private String nom;
+        private String prenom;
+        private String phone;
+        private String departement;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateEncadreurRequest {
+        private String email;
+        private String nom;
+        private String prenom;
+        private String phone;
+        private String departement;
+        private String specialization;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CreateStagiaireRequest {
+        private String email;
+        private String nom;
+        private String prenom;
+        private String phone;
+        private String departement;
+        private Long encadreurId;
+        private String school;
+        private String major;
+        private String startDate;
+        private String endDate;
+    }
 }
