@@ -73,6 +73,88 @@ public class InternService {
         return InternDTO.fromEntity(intern);
     }
 
+    @Transactional(readOnly = true)
+    public List<InternDTO> getInternsByEncadreur(Long encadreurId) {
+        return internRepository.findByEncadreurId(encadreurId).stream()
+                .map(InternDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<InternDTO> getInternsByDepartment(String department) {
+        return internRepository.findAll().stream()
+                .filter(intern -> intern.getUser().getDepartement() != null &&
+                        intern.getUser().getDepartement().equalsIgnoreCase(department))
+                .map(InternDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<InternDTO> getInternsByStatus(Intern.InternshipStatus status) {
+        return internRepository.findByStatus(status).stream()
+                .map(InternDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public InternDTO updateIntern(Long id, CreateInternRequest request) {
+        Intern intern = internRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Stagiaire non trouvé"));
+
+        User user = intern.getUser();
+
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new RuntimeException("Un utilisateur avec cet email existe déjà");
+            }
+            user.setEmail(request.getEmail());
+        }
+
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+
+        userRepository.save(user);
+
+        if (request.getEncadreurId() != null) {
+            Encadreur encadreur = encadreurRepository.findById(request.getEncadreurId())
+                    .orElseThrow(() -> new RuntimeException("Encadreur non trouvé"));
+            intern.setEncadreur(encadreur);
+        }
+
+        if (request.getSchool() != null) {
+            intern.setSchool(request.getSchool());
+        }
+        if (request.getDepartment() != null) {
+            user.setDepartement(request.getDepartment());
+            userRepository.save(user);
+        }
+        if (request.getStartDate() != null) {
+            intern.setStartDate(request.getStartDate());
+        }
+        if (request.getEndDate() != null) {
+            intern.setEndDate(request.getEndDate());
+        }
+
+        intern = internRepository.save(intern);
+        return InternDTO.fromEntity(intern);
+    }
+
+    @Transactional
+    public InternDTO updateInternStatus(Long id, Intern.InternshipStatus status) {
+        Intern intern = internRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Stagiaire non trouvé"));
+        intern.setStatus(status);
+        intern = internRepository.save(intern);
+        return InternDTO.fromEntity(intern);
+    }
+
     @Transactional
     public void deleteIntern(Long id) {
         Intern intern = internRepository.findById(id)
